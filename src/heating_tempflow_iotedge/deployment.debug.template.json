@@ -9,7 +9,13 @@
           "settings": {
             "minDockerVersion": "v1.25",
             "loggingOptions": "",
-            "registryCredentials": {}
+            "registryCredentials": {
+              "tempflowcontainers": {
+                "username": "$CONTAINER_REGISTRY_USERNAME_tempflowcontainers",
+                "password": "$CONTAINER_REGISTRY_PASSWORD_tempflowcontainers",
+                "address": "tempflowcontainers.azurecr.io"
+              }
+            }
           }
         },
         "systemModules": {
@@ -29,9 +35,21 @@
               "createOptions": {
                 "HostConfig": {
                   "PortBindings": {
-                    "5671/tcp": [{"HostPort": "5671"}],
-                    "8883/tcp": [{"HostPort": "8883"}],
-                    "443/tcp": [{"HostPort": "443"}]
+                    "5671/tcp": [
+                      {
+                        "HostPort": "5671"
+                      }
+                    ],
+                    "8883/tcp": [
+                      {
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
                   }
                 }
               }
@@ -48,6 +66,16 @@
               "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
               "createOptions": {}
             }
+          },
+          "DS18B2TemperatureReader": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.DS18B2TemperatureReader.debug}",
+              "createOptions": {}
+            }
           }
         }
       }
@@ -55,7 +83,9 @@
     "$edgeHub": {
       "properties.desired": {
         "schemaVersion": "1.0",
-        "routes": {},
+        "routes": {
+          "DS18B2TemperatureReaderToIoTHub": "FROM /messages/modules/DS18B2TemperatureReader/outputs/* INTO $upstream"
+        },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
         }
