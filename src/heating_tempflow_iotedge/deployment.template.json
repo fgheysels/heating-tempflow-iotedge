@@ -58,13 +58,21 @@
         },
         "modules": {
           "DS18B2TemperatureReader": {
-            "version": "1.0",
+            "version": "1.1",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.DS18B2TemperatureReader}",
-              "createOptions": {}
+              "createOptions": {
+                "Mounts": [
+                  {
+                    "Type": "volume",
+                    "Source": "w1devices",
+                    "Target": "/sys/devices/w1_bus_master1"
+                  }
+                ]
+              }
             }
           }
         }

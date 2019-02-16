@@ -57,16 +57,6 @@
           }
         },
         "modules": {
-          "tempSensor": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
-              "createOptions": {}
-            }
-          },
           "DS18B2TemperatureReader": {
             "version": "1.0",
             "type": "docker",
@@ -74,7 +64,15 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.DS18B2TemperatureReader.debug}",
-              "createOptions": {}
+              "createOptions": {
+                "Mounts": [
+                  {
+                    "Type": "volume",
+                    "Source": "w1devices",
+                    "Target": "/sys/devices/w1_bus_master1"
+                  }
+                ]
+              }
             }
           }
         }
