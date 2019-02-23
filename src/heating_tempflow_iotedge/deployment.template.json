@@ -65,13 +65,15 @@
             "settings": {
               "image": "${MODULES.DS18B2TemperatureReader}",
               "createOptions": {
-                "Mounts": [
-                  {
-                    "Type": "volume",
-                    "Source": "w1devices",
-                    "Target": "/sys/devices/w1_bus_master1"
-                  }
-                ]
+                "HostConfig":{
+                  "Mounts": [
+                    {
+                      "Type": "bind",
+                      "Target": "/w1devices",
+                      "Source": "/sys/devices/w1_bus_master1"
+                    }
+                  ]
+                }
               }
             }
           }
