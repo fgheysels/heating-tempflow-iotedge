@@ -15,9 +15,9 @@ namespace DS18B2TemperatureReader
     {
         static int counter;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Init().Wait();
+           await Init();
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -29,16 +29,16 @@ namespace DS18B2TemperatureReader
             ITransportSettings[] settings = { mqttSetting };
 
             // Open a connection to the Edge runtime
-            ModuleClient ioTHubModuleClient =  ModuleClient.CreateFromEnvironmentAsync(settings).Result;
-             ioTHubModuleClient.OpenAsync().Wait();
+            ModuleClient ioTHubModuleClient = await  ModuleClient.CreateFromEnvironmentAsync(settings);
+            await ioTHubModuleClient.OpenAsync();
 
             while( ! cts.IsCancellationRequested )
             {
-                var content = File.ReadAllText("/sys/devices/w1_bus_master1/28-0316856daaff/w1_slave");
+                var content = File.ReadAllText("/w1devices/28-0316856daaff/w1_slave");
                 var msg = new Message(System.Text.Encoding.UTF8.GetBytes(content));
 
                 ioTHubModuleClient.SendEventAsync(msg).Wait();
-                Thread.Sleep(30);
+                Thread.Sleep(30000);
             }
 
             
