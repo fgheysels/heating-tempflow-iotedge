@@ -37,12 +37,11 @@ namespace DS18B2TemperatureReader
                 var content = File.ReadAllText("/w1devices/28-0316856daaff/w1_slave");
                 var msg = new Message(System.Text.Encoding.UTF8.GetBytes(content));
 
-                ioTHubModuleClient.SendEventAsync(msg).Wait();
-                Thread.Sleep(30000);
+                await ioTHubModuleClient.SendEventAsync(msg);
+                await Task.Delay(30000);
             }
 
-            
-            WhenCancelled(cts.Token).Wait();
+           await WhenCancelled(cts.Token);
         }
 
         /// <summary>
