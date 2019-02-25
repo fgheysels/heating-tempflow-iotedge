@@ -18,6 +18,8 @@ namespace DS18B2TemperatureReader
     {
         static async Task Main(string[] args)
         {
+            Console.WriteLine($"Starting ds18b2temperaturereader at {DateTime.Now}");
+
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
 
@@ -51,6 +53,8 @@ namespace DS18B2TemperatureReader
 
             await ioTHubModuleClient.CloseAsync();
             await WhenCancelled(cts.Token);
+
+            Console.WriteLine("ds18b2temperaturereader module stopped.");
         }
 
         private static async Task<SensorData> ReadSensorDataAsync(string sensor, CancellationToken cts)
