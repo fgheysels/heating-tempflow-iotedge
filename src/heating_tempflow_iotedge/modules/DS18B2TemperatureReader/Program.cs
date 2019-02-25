@@ -59,7 +59,7 @@ namespace DS18B2TemperatureReader
 
         private static async Task<SensorData> ReadSensorDataAsync(string sensor, CancellationToken cts)
         {
-            var sensorId = Path.GetFileName(Path.GetDirectoryName(sensor));
+            var sensorId = Path.GetFileName(sensor);
 
             var sensorDataFile = $"{sensor}/w1_slave";
 
