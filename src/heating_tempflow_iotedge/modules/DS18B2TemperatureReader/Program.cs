@@ -46,7 +46,7 @@ namespace DS18B2TemperatureReader
 
                 await SendDataToIotHubAsync(sensorReadTasks.Select(t => t.Result), ioTHubModuleClient);
 
-                await Task.Delay(30000);
+                await Task.Delay(30000, cts.Token);
             }
 
             await ioTHubModuleClient.CloseAsync();
