@@ -41,7 +41,7 @@ namespace DS18B2TemperatureReader
 
                 foreach (var sensor in allSensors)
                 {
-                    sensorReadTasks.Add(ReadSensorDataAsync($"{sensor}/w1_slave", cts.Token));
+                    sensorReadTasks.Add(ReadSensorDataAsync(sensor, cts.Token));
                 }
 
                 await Task.WhenAll(sensorReadTasks);
@@ -59,15 +59,19 @@ namespace DS18B2TemperatureReader
 
         private static async Task<SensorData> ReadSensorDataAsync(string sensor, CancellationToken cts)
         {
-            var content = await File.ReadAllTextAsync(sensor, cts);
+            var sensorId = Path.GetFileName(Path.GetDirectoryName(sensor));
+
+            var sensorDataFile = $"{sensor}/w1_slave";
+
+            var content = await File.ReadAllTextAsync(sensorDataFile, cts);
 
             var temperature = GetTemperatureFromContent(content);
 
             return new SensorData
             {
-                SensorId = sensor,
-                    MeasurementDateTime = DateTime.Now,
-                    Temperature = temperature
+                SensorId = sensorId,
+                MeasurementDateTime = DateTime.Now,
+                Temperature = temperature
             };
 
             double GetTemperatureFromContent(string sensorData)
