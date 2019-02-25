@@ -60,3 +60,6 @@ The steps to install Azure IoT edge on the Rpi are outlined [here](https://thene
 - if IoT Edge cannot pull the container for your module from the container registry, you probably did not enter the container-information in the Container Registry Settings in the Azure Portal under 'set modules'.
 
 - display logs / status of IoT module:
+  ```
+  iotedge logs <containername>
+  ```
