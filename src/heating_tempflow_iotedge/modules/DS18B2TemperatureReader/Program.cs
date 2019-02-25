@@ -70,14 +70,14 @@ namespace DS18B2TemperatureReader
             return new SensorData
             {
                 SensorId = sensorId,
-                MeasurementDateTime = DateTime.Now,
-                Temperature = temperature
+                    MeasurementDateTime = DateTime.Now,
+                    Temperature = temperature
             };
 
             double GetTemperatureFromContent(string sensorData)
             {
                 int index = content.LastIndexOf(" t=");
-                return Convert.ToDouble(content.Substring(index + 3));
+                return Convert.ToDouble(content.Substring(index + 3)) / 1000;
             }
         }
 
