@@ -14,6 +14,7 @@ This section contains more information on the steps that I've taken to get this 
 - [Preparing the development environment](./docs/prepare-dev-environment.md)
 - Deploy Azure resources via ARM script
 - Creating IoT Edge modules
+- [Deploying modules to the Raspberry Pi](./docs/deploying-modules.md)
 - Troubleshooting
 
 ## Key take-aways
