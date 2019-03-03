@@ -90,7 +90,7 @@ namespace DS18B2TemperatureReader
                 messages.Add(new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(measurement))));
             }
 
-            await moduleClient.SendEventBatchAsync(messages);
+            await moduleClient.SendEventBatchAsync("temperature_output", messages);
         }
 
         /// <summary>
