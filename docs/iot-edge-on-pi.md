@@ -34,3 +34,5 @@ sudo apt-get install -f
 
 Once this is done, you can find a `config.yaml` file in /etc/iodedge
 In a next step, the connectionstring to the IoT Hub to which IoT Edge must communicate with must be specified in this file.
+
+Microsoft documentation on how to install can be found [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm).
