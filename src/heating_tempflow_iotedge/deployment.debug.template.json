@@ -74,6 +74,16 @@
                 ]
               }
             }
+          },
+          "AddTemperatureCorrectionFactor": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.AddTemperatureCorrectionFactor.debug}",
+              "createOptions": {}
+            }
           }
         }
       }
@@ -82,7 +92,8 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "DS18B2TemperatureReaderToIoTHub": "FROM /messages/modules/DS18B2TemperatureReader/outputs/* INTO $upstream"
+          "DS18B2TemperatureReaderToIoTHub": "FROM /messages/modules/DS18B2TemperatureReader/outputs/* INTO $upstream",
+          "AddTemperatureCorrectionFactorToIoTHub": "FROM /messages/modules/AddTemperatureCorrectionFactor/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
