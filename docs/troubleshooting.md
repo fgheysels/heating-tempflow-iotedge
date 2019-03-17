@@ -1,5 +1,7 @@
 # Troubleshooting IoT Edge on Raspbian
 
+## Getting runtime log information
+
 - View the status of IoT Edge:
   
   ```
@@ -45,3 +47,7 @@
   ```
 
 - if IoT Edge cannot pull the container for your module from the container registry, you probably did not enter the container-information in the Container Registry Settings in the Azure Portal under 'set modules'.
+
+## Debugging custom module
+
+This [article](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-vs-code-develop-module#debug-a-module-without-a-container-c-nodejs-java) explains how to debug a custom module.  Note that the iotedgehubdev module must be installed.  See the [prepare dev environment](prepare-dev-environment.md) page.
