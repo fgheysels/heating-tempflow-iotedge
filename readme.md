@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project is a reworked version of 'Heating tempflow'.  In the original project, I've used a Python script to read out temperature sensors and posted the values to an InfluxDB instance that was running on the Raspberry Pi itself, the values where visualized using Grafana.
+This project is a reworked version of ['Heating tempflow'](https://github.com/fgheysels/heating-tempflow).  In the original project, I've used a Python script to read out temperature sensors and posted the values to an InfluxDB instance that was running on the Raspberry Pi itself, the values where visualized using Grafana.
 
 In this version of the project, I'm making use of Azure IoT Edge.  A custom module (container) is hosted in Azure IoT Edge that reads the temperature from the HS18B2 temperature sensors.  The data is transmitted to an Azure IoT Hub instance and will be visualized by an Azure Time Series Insights resource.
 
