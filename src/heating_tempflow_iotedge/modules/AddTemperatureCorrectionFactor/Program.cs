@@ -80,8 +80,10 @@ namespace AddTemperatureCorrectionFactor
             return Task.FromResult(MessageResponse.Completed);
         }
 
-        private static Task OnDesiredPropertiesUpdated(TwinCollection desiredProperties, object userContext)
+        private static async Task OnDesiredPropertiesUpdated(TwinCollection desiredProperties, object userContext)
         {
+            Console.WriteLine("Updating properties ...");
+
             _twinProperties = desiredProperties;
 
             foreach (var property in desiredProperties)
@@ -94,7 +96,9 @@ namespace AddTemperatureCorrectionFactor
 
             _twinProperties["LastUpdated"] = DateTime.Now;
 
-            return Task.CompletedTask;
+            await UpdateReportedProperties(userContext as ModuleClient);
+
+            Console.WriteLine("Properties updated.");
         }
 
         private static async Task UpdateReportedProperties(ModuleClient client)
