@@ -1,5 +1,6 @@
 namespace AddTemperatureCorrectionFactor
 {
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -17,7 +18,8 @@ namespace AddTemperatureCorrectionFactor
     class Program
     {
 
-        private static readonly Dictionary<string, SensorCorrectionFactor> _correctionFactors = new Dictionary<string, SensorCorrectionFactor>();
+        private static readonly ConcurrentDictionary<string, SensorCorrectionFactor> _correctionFactors = new ConcurrentDictionary<string, SensorCorrectionFactor>();
+        private static TwinCollection _twinProperties = new TwinCollection();
 
         static void Main(string[] args)
         {
@@ -54,12 +56,12 @@ namespace AddTemperatureCorrectionFactor
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
-            _correctionFactors.Add("test", new SensorCorrectionFactor
+            _twinProperties["test"] = new SensorCorrectionFactor
             {
                 SensorId = "test",
-                    SensorDescription = "test description",
-                    CorrectionFactor = 7.4f
-            });
+                SensorDescription = "test description",
+                CorrectionFactor = 7.4f
+            };
 
             // Register callback to be called when the Desired Properties for this module are updated.
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdated, ioTHubModuleClient);
@@ -80,28 +82,31 @@ namespace AddTemperatureCorrectionFactor
 
         private static Task OnDesiredPropertiesUpdated(TwinCollection desiredProperties, object userContext)
         {
-            if (desiredProperties.Contains("CorrectionFactors") == false)
+            _twinProperties = desiredProperties;
+
+            foreach (var property in desiredProperties)
             {
-                return Task.CompletedTask;
+                if (property is SensorCorrectionFactor f)
+                {
+                    _correctionFactors.AddOrUpdate(f.SensorId, f, (key, _) => f);
+                }
             }
 
-            string o = desiredProperties["CorrectionFactors"];
-
-            var correctionFactors = JsonConvert.DeserializeObject<SensorCorrectionFactor[]>(o);
+            _twinProperties["LastUpdated"] = DateTime.Now;
 
             return Task.CompletedTask;
         }
 
         private static async Task UpdateReportedProperties(ModuleClient client)
         {
-            var reportedProperties = new TwinCollection();
+            // var reportedProperties = new TwinCollection();
 
-            foreach (var kvp in _correctionFactors)
-            {
-                reportedProperties[kvp.Key] = new { kvp.Value.SensorDescription, kvp.Value.CorrectionFactor };
-            }
+            // foreach (var kvp in _correctionFactors)
+            // {
+            //     reportedProperties[kvp.Key] = new { kvp.Value.SensorDescription, kvp.Value.CorrectionFactor };
+            // }
 
-            await client.UpdateReportedPropertiesAsync(reportedProperties);
+            await client.UpdateReportedPropertiesAsync(_twinProperties);
         }
 
         /// <summary>
