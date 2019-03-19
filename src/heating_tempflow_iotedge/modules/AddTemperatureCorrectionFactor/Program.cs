@@ -57,8 +57,8 @@ namespace AddTemperatureCorrectionFactor
             _correctionFactors.Add("test", new SensorCorrectionFactor
             {
                 SensorId = "test",
-                SensorDescription = "test description",
-                CorrectionFactdor = 7.4f
+                    SensorDescription = "test description",
+                    CorrectionFactor = 7.4f
             });
 
             // Register callback to be called when the Desired Properties for this module are updated.
@@ -94,29 +94,14 @@ namespace AddTemperatureCorrectionFactor
 
         private static async Task UpdateReportedProperties(ModuleClient client)
         {
-            List<SensorCorrectionFactor> factors = new List<SensorCorrectionFactor>();
+            var reportedProperties = new TwinCollection();
 
             foreach (var kvp in _correctionFactors)
             {
-                factors.Add(kvp.Value);
+                reportedProperties[kvp.Key] = new { kvp.Value.SensorDescription, kvp.Value.CorrectionFactor };
             }
 
-            var reportedProperties = new TwinCollection();
-
-            reportedProperties["CorrectionFactors"] = JsonConvert.SerializeObject(factors);
-
-            try
-            {
-                await client.UpdateReportedPropertiesAsync(reportedProperties);
-            }
-            catch (AggregateException ex)
-            {
-                Console.WriteLine(ex.Message);
-                foreach (var exception in ex.InnerExceptions)
-                {
-                    Console.WriteLine(exception.Message);
-                }
-            }
+            await client.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         /// <summary>
@@ -156,6 +141,6 @@ namespace AddTemperatureCorrectionFactor
     {
         public string SensorId { get; set; }
         public string SensorDescription { get; set; }
-        public float CorrectionFactdor { get; set; }
+        public float CorrectionFactor { get; set; }
     }
 }
