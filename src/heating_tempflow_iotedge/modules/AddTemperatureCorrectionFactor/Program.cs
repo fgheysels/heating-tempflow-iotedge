@@ -91,6 +91,7 @@ namespace AddTemperatureCorrectionFactor
                 if (property is SensorCorrectionFactor f)
                 {
                     _correctionFactors.AddOrUpdate(f.SensorId, f, (key, _) => f);
+                    Console.WriteLine($"SensorCorrectionFactor for {f.SensorId} updated!");
                 }
             }
 
@@ -98,19 +99,35 @@ namespace AddTemperatureCorrectionFactor
 
             await UpdateReportedProperties(userContext as ModuleClient);
 
-            Console.WriteLine("Properties updated.");
+            Console.WriteLine("Properties updated!");
         }
 
         private static async Task UpdateReportedProperties(ModuleClient client)
         {
-            // var reportedProperties = new TwinCollection();
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
 
-            // foreach (var kvp in _correctionFactors)
-            // {
-            //     reportedProperties[kvp.Key] = new { kvp.Value.SensorDescription, kvp.Value.CorrectionFactor };
-            // }
+            // A new collection is created where the readonly properties (starting with $) are
+            // filtered out of it.  If these properties are in the collection, the properties
+            // will not be updated and no error will be reported.
+            var reportedProperties = new TwinCollection();
 
-            await client.UpdateReportedPropertiesAsync(_twinProperties);
+            foreach (KeyValuePair<string, dynamic> kvp in _twinProperties)
+            {
+                if (kvp.Key.StartsWith("$"))
+                {
+                    continue;
+                }
+
+                reportedProperties[kvp.Key] = kvp.Value;
+            }
+
+            Console.WriteLine("Reporting properties are these:");
+            Console.WriteLine(JsonConvert.SerializeObject(reportedProperties));
+
+            await client.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         /// <summary>
