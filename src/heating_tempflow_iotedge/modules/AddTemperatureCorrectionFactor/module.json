@@ -2,9 +2,9 @@
     "$schema-version": "0.0.1",
     "description": "",
     "image": {
-        "repository": "localhost:5000/addtemperaturecorrectionfactor",
+        "repository": "tempflowcontainers.azurecr.io/addtemperaturecorrectionfactor",
         "tag": {
-            "version": "0.0.1",
+            "version": "0.0.14",
             "platforms": {
                 "amd64": "./Dockerfile.amd64", 
                 "amd64.debug": "./Dockerfile.amd64.debug",
