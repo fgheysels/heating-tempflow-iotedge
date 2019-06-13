@@ -92,14 +92,14 @@ namespace AddTemperatureCorrectionFactor
         {
             Console.WriteLine("Updating properties ...");
 
-            _twinProperties = desiredProperties;
-
             foreach (var property in desiredProperties)
             {
                 if (property is SensorCorrectionFactor f)
                 {
                     _correctionFactors.AddOrUpdate(f.SensorId, f, (key, _) => f);
                     Console.WriteLine($"SensorCorrectionFactor for {f.SensorId} updated!");
+
+                    _twinProperties[f.SensorId] = f;
                 }
             }
 
