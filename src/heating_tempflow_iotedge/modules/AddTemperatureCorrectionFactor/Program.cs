@@ -61,10 +61,6 @@ namespace AddTemperatureCorrectionFactor
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("temperature_input", ApplyCorrectionFactor, ioTHubModuleClient);
 
-            var twin = await ioTHubModuleClient.GetTwinAsync();
-
-            Console.WriteLine(JsonConvert.SerializeObject(twin.Properties));
-
             await UpdateReportedProperties(ioTHubModuleClient);
         }
 
