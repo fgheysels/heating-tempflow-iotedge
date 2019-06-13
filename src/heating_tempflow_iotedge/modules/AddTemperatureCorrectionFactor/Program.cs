@@ -59,7 +59,7 @@ namespace AddTemperatureCorrectionFactor
             // Register callback to be called when the Desired Properties for this module are updated.
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdated, ioTHubModuleClient);
             // Register callback to be called when a message is received by the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ApplyCorrectionFactor, ioTHubModuleClient);
+            await ioTHubModuleClient.SetInputMessageHandlerAsync("temperature_input", ApplyCorrectionFactor, ioTHubModuleClient);
 
             var twin = await ioTHubModuleClient.GetTwinAsync();
 
@@ -87,7 +87,7 @@ namespace AddTemperatureCorrectionFactor
 
             sensorData.Temperature += correctionFactor.CorrectionFactor;
 
-            await moduleClient.SendEventAsync("output1", new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sensorData))));
+            await moduleClient.SendEventAsync("correctedtemperature_output", new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sensorData))));
 
             return await Task.FromResult(MessageResponse.Completed);
         }
