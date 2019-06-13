@@ -48,8 +48,8 @@ namespace AddTemperatureCorrectionFactor
         /// </summary>
         static async Task Init()
         {
-            AmqpTransportSettings mqttSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
-            ITransportSettings[] settings = { mqttSetting };
+            AmqpTransportSettings amqpSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] settings = { amqpSetting };
 
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
@@ -75,9 +75,28 @@ namespace AddTemperatureCorrectionFactor
             await UpdateReportedProperties(ioTHubModuleClient);
         }
 
-        private static Task<MessageResponse> ApplyCorrectionFactor(Message message, object userContext)
+        private async static Task<MessageResponse> ApplyCorrectionFactor(Message message, object userContext)
         {
-            return Task.FromResult(MessageResponse.Completed);
+            var moduleClient = (ModuleClient) userContext;
+
+            var sensorData = JsonConvert.DeserializeObject<SensorData>(System.Text.Encoding.UTF8.GetString(message.GetBytes()));
+
+            if (_correctionFactors.TryGetValue(sensorData.SensorId, out var correctionFactor) == false)
+            {
+                correctionFactor = SensorCorrectionFactor.DefaultFor(sensorData.SensorId);
+                if (_correctionFactors.TryAdd(sensorData.SensorId, correctionFactor))
+                {
+                    // Report this correction-factor in the Module Twin desired properties.
+                    _twinProperties[sensorData.SensorId] = correctionFactor;
+                    await UpdateReportedProperties(moduleClient);
+                }
+            }
+
+            sensorData.Temperature += correctionFactor.CorrectionFactor;
+
+            await moduleClient.SendEventAsync("output1", new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sensorData))));
+
+            return await Task.FromResult(MessageResponse.Completed);
         }
 
         private static async Task OnDesiredPropertiesUpdated(TwinCollection desiredProperties, object userContext)
@@ -99,7 +118,7 @@ namespace AddTemperatureCorrectionFactor
 
             await UpdateReportedProperties(userContext as ModuleClient);
 
-            Console.WriteLine("Properties updated!");
+            Console.WriteLine("Twin properties updated!");
         }
 
         private static async Task UpdateReportedProperties(ModuleClient client)
@@ -163,10 +182,32 @@ namespace AddTemperatureCorrectionFactor
         // }
     }
 
+    public class SensorData
+    {
+        [JsonProperty("sensorid")]
+        public string SensorId { get; set; }
+
+        [JsonProperty("timestamp")]
+        public DateTime MeasurementDateTime { get; set; }
+
+        [JsonProperty("temperature")]
+        public double Temperature { get; set; }
+    }
+
     public class SensorCorrectionFactor
     {
         public string SensorId { get; set; }
         public string SensorDescription { get; set; }
         public float CorrectionFactor { get; set; }
+
+        public static SensorCorrectionFactor DefaultFor(string sensorId)
+        {
+            return new SensorCorrectionFactor
+            {
+                SensorId = sensorId,
+                    SensorDescription = "Unknown",
+                    CorrectionFactor = 0.0f
+            };
+        }
     }
 }
