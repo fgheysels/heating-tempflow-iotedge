@@ -141,38 +141,6 @@ namespace AddTemperatureCorrectionFactor
 
             await client.UpdateReportedPropertiesAsync(reportedProperties);
         }
-
-        /// <summary>
-        /// This method is called whenever the module is sent a message from the EdgeHub. 
-        /// It just pipe the messages without any change.
-        /// It prints all the incoming messages.
-        /// </summary>
-        // static async Task<MessageResponse> PipeMessage(Message message, object userContext)
-        // {
-        //     int counterValue = Interlocked.Increment(ref counter);
-
-        //     var moduleClient = userContext as ModuleClient;
-        //     if (moduleClient == null)
-        //     {
-        //         throw new InvalidOperationException("UserContext doesn't contain " + "expected values");
-        //     }
-
-        //     byte[] messageBytes = message.GetBytes();
-        //     string messageString = Encoding.UTF8.GetString(messageBytes);
-        //     Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
-
-        //     if (!string.IsNullOrEmpty(messageString))
-        //     {
-        //         var pipeMessage = new Message(messageBytes);
-        //         foreach (var prop in message.Properties)
-        //         {
-        //             pipeMessage.Properties.Add(prop.Key, prop.Value);
-        //         }
-        //         await moduleClient.SendEventAsync("output1", pipeMessage);
-        //         Console.WriteLine("Received message sent");
-        //     }
-        //     return MessageResponse.Completed;
-        // }
     }
 
     public class SensorData
