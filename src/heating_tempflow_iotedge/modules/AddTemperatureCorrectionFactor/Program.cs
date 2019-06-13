@@ -66,6 +66,8 @@ namespace AddTemperatureCorrectionFactor
 
         private async static Task<MessageResponse> ApplyCorrectionFactor(Message message, object userContext)
         {
+            Console.WriteLine("AddTemperatureCorrectionFactor module received a message");
+
             var moduleClient = (ModuleClient) userContext;
 
             var sensorData = JsonConvert.DeserializeObject<SensorData>(System.Text.Encoding.UTF8.GetString(message.GetBytes()));
