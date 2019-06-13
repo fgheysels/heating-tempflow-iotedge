@@ -56,13 +56,6 @@ namespace AddTemperatureCorrectionFactor
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
-            _twinProperties["test"] = new SensorCorrectionFactor
-            {
-                SensorId = "test",
-                SensorDescription = "test description",
-                CorrectionFactor = 7.4f
-            };
-
             // Register callback to be called when the Desired Properties for this module are updated.
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdated, ioTHubModuleClient);
             // Register callback to be called when a message is received by the module
