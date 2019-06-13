@@ -70,6 +70,8 @@ namespace AddTemperatureCorrectionFactor
 
             var sensorData = JsonConvert.DeserializeObject<SensorData>(System.Text.Encoding.UTF8.GetString(message.GetBytes()));
 
+            Console.WriteLine($"Try to apply correction-factor sensor {sensorData.SensorId}");
+
             if (_correctionFactors.TryGetValue(sensorData.SensorId, out var correctionFactor) == false)
             {
                 correctionFactor = SensorCorrectionFactor.DefaultFor(sensorData.SensorId);
