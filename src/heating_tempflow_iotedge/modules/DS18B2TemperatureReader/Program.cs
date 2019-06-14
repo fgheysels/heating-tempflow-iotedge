@@ -71,8 +71,8 @@ namespace DS18B2TemperatureReader
             return new SensorData
             {
                 SensorId = sensorId,
-                    MeasurementDateTime = DateTime.Now,
-                    Temperature = temperature
+                MeasurementDateTime = DateTime.Now,
+                Temperature = temperature
             };
 
             double GetTemperatureFromContent(string sensorData)
@@ -81,7 +81,7 @@ namespace DS18B2TemperatureReader
                 return Convert.ToDouble(content.Substring(index + 3)) / 1000;
             }
         }
-
+        
         private static async Task SendDataToIotHubAsync(IEnumerable<SensorData> sensorData, ModuleClient moduleClient)
         {
             List<Message> messages = new List<Message>();
@@ -91,6 +91,7 @@ namespace DS18B2TemperatureReader
                 messages.Add(new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(measurement))));
             }
 
+            Console.WriteLine($"Sending {messages.Count} messages to temperature_output endpoint");
             await moduleClient.SendEventBatchAsync("temperature_output", messages);
         }
 

@@ -48,43 +48,53 @@ namespace AddTemperatureCorrectionFactor
         /// </summary>
         static async Task Init()
         {
-            AmqpTransportSettings mqttSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
-            ITransportSettings[] settings = { mqttSetting };
+            AmqpTransportSettings amqpSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] settings = { amqpSetting };
 
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
-            _twinProperties["test"] = new SensorCorrectionFactor
-            {
-                SensorId = "test",
-                SensorDescription = "test description",
-                CorrectionFactor = 7.4f
-            };
-
             // Register callback to be called when the Desired Properties for this module are updated.
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdated, ioTHubModuleClient);
             // Register callback to be called when a message is received by the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ApplyCorrectionFactor, ioTHubModuleClient);
-
-            var twin = await ioTHubModuleClient.GetTwinAsync();
-
-            Console.WriteLine(JsonConvert.SerializeObject(twin.Properties));
+            await ioTHubModuleClient.SetInputMessageHandlerAsync("temperature_input", ApplyCorrectionFactor, ioTHubModuleClient);
 
             await UpdateReportedProperties(ioTHubModuleClient);
         }
 
-        private static Task<MessageResponse> ApplyCorrectionFactor(Message message, object userContext)
+        private async static Task<MessageResponse> ApplyCorrectionFactor(Message message, object userContext)
         {
-            return Task.FromResult(MessageResponse.Completed);
+            Console.WriteLine("AddTemperatureCorrectionFactor module received a message");
+
+            var moduleClient = (ModuleClient) userContext;
+
+            var sensorData = JsonConvert.DeserializeObject<SensorData>(System.Text.Encoding.UTF8.GetString(message.GetBytes()));
+
+            Console.WriteLine($"Try to apply correction-factor sensor {sensorData.SensorId}");
+
+            if (_correctionFactors.TryGetValue(sensorData.SensorId, out var correctionFactor) == false)
+            {
+                correctionFactor = SensorCorrectionFactor.DefaultFor(sensorData.SensorId);
+                if (_correctionFactors.TryAdd(sensorData.SensorId, correctionFactor))
+                {
+                    // Report this correction-factor in the Module Twin desired properties.
+                    _twinProperties[sensorData.SensorId] = correctionFactor;
+                    await UpdateReportedProperties(moduleClient);
+                }
+            }
+
+            sensorData.Temperature += correctionFactor.CorrectionFactor;
+
+            await moduleClient.SendEventAsync("correctedtemperature_output", new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sensorData))));
+
+            return await Task.FromResult(MessageResponse.Completed);
         }
 
         private static async Task OnDesiredPropertiesUpdated(TwinCollection desiredProperties, object userContext)
         {
             Console.WriteLine("Updating properties ...");
-
-            _twinProperties = desiredProperties;
 
             foreach (var property in desiredProperties)
             {
@@ -92,6 +102,8 @@ namespace AddTemperatureCorrectionFactor
                 {
                     _correctionFactors.AddOrUpdate(f.SensorId, f, (key, _) => f);
                     Console.WriteLine($"SensorCorrectionFactor for {f.SensorId} updated!");
+
+                    _twinProperties[f.SensorId] = f;
                 }
             }
 
@@ -99,7 +111,7 @@ namespace AddTemperatureCorrectionFactor
 
             await UpdateReportedProperties(userContext as ModuleClient);
 
-            Console.WriteLine("Properties updated!");
+            Console.WriteLine("Twin properties updated!");
         }
 
         private static async Task UpdateReportedProperties(ModuleClient client)
@@ -129,44 +141,5 @@ namespace AddTemperatureCorrectionFactor
 
             await client.UpdateReportedPropertiesAsync(reportedProperties);
         }
-
-        /// <summary>
-        /// This method is called whenever the module is sent a message from the EdgeHub. 
-        /// It just pipe the messages without any change.
-        /// It prints all the incoming messages.
-        /// </summary>
-        // static async Task<MessageResponse> PipeMessage(Message message, object userContext)
-        // {
-        //     int counterValue = Interlocked.Increment(ref counter);
-
-        //     var moduleClient = userContext as ModuleClient;
-        //     if (moduleClient == null)
-        //     {
-        //         throw new InvalidOperationException("UserContext doesn't contain " + "expected values");
-        //     }
-
-        //     byte[] messageBytes = message.GetBytes();
-        //     string messageString = Encoding.UTF8.GetString(messageBytes);
-        //     Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
-
-        //     if (!string.IsNullOrEmpty(messageString))
-        //     {
-        //         var pipeMessage = new Message(messageBytes);
-        //         foreach (var prop in message.Properties)
-        //         {
-        //             pipeMessage.Properties.Add(prop.Key, prop.Value);
-        //         }
-        //         await moduleClient.SendEventAsync("output1", pipeMessage);
-        //         Console.WriteLine("Received message sent");
-        //     }
-        //     return MessageResponse.Completed;
-        // }
-    }
-
-    public class SensorCorrectionFactor
-    {
-        public string SensorId { get; set; }
-        public string SensorDescription { get; set; }
-        public float CorrectionFactor { get; set; }
     }
 }
